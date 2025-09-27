@@ -12,6 +12,7 @@ import UnifiedAgentService from './src/services/UnifiedAgentService.js';
 import ContextMiddleware from './src/middleware/ContextMiddleware.js';
 import SessionMemoryStore from './src/services/SessionMemoryStore.js';
 import ContextInjector from './src/services/ContextInjector.js';
+import StoryDriveAgents from './src/services/StoryDriveAgents.js';
 import createMemoryRoutes from './src/routes/memoryRoutes.js';
 
 dotenv.config();
@@ -57,6 +58,9 @@ const memoryStore = new SessionMemoryStore({
 // Initialize context injector
 const contextInjector = new ContextInjector(memoryStore);
 contextAgent.setContextInjector(contextInjector);
+
+// Initialize Story-Drive agents
+const storyDriveAgents = new StoryDriveAgents();
 
 // Enable debug logging if configured
 if (process.env.DEBUG_CONTEXT === 'true') {
@@ -134,8 +138,22 @@ app.post('/api/agents/:name/chat', async (req, res) => {
       console.log('💬 User message (no context):', message);
     }
 
-    // Load the agent first to get their persona
-    const agent = await agentSystem.loadAgent(req.params.name);
+    // Try to load Story-Drive agent first
+    let agent = storyDriveAgents.findAgent(req.params.name);
+
+    // Fallback to BMAD agent if not found
+    if (!agent) {
+      try {
+        agent = await agentSystem.loadAgent(req.params.name);
+      } catch (error) {
+        console.error(`Failed to load BMAD agent ${req.params.name}:`, error);
+        // Return a more helpful error
+        return res.status(404).json({
+          success: false,
+          error: `Agent '${req.params.name}' not found. Available agents: plot, character, world, dialog, genre, editor, reader, narrative`
+        });
+      }
+    }
 
     // Store user message in memory
     await memoryStore.addConversation(sessionId, req.params.name, 'user', cleanMessage);
@@ -506,7 +524,7 @@ if (process.env.DEBUG_CONTEXT === 'true') {
 }
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`
 ╔════════════════════════════════════════════════╗
 ║                                                ║
@@ -521,6 +539,11 @@ app.listen(PORT, () => {
 ╚════════════════════════════════════════════════╝
 
 ✅ OpenAI API Key configured
-🤖 Ready to load BMAD Creative Writing agents
   `);
+
+  // Load Story-Drive agents
+  console.log('🎭 Loading Story-Drive Creative Writing Agents...');
+  await storyDriveAgents.loadAllAgents();
+
+  console.log('✨ Story-Drive agents ready with Epic 2 context awareness!');
 });
