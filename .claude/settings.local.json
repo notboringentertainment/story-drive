@@ -18,7 +18,8 @@
       "Bash(find:*)",
       "Bash(awk:*)",
       "Read(//Users/ben/Desktop/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

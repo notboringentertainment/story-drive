@@ -18,6 +18,8 @@ class StoryDriveApp {
         this.selectedText = '';
         this.contextBroadcastTimer = null;
         this.smartReplaceActive = false;
+        this.currentContext = '';
+        this.sessionId = `session-${Date.now()}`;
 
         this.init();
     }
@@ -382,11 +384,41 @@ class StoryDriveApp {
         list.innerHTML = '<div class="loading">Getting AI suggestions...</div>';
         panel.classList.remove('hidden');
 
-        // Simulate getting suggestions from agents
-        setTimeout(() => {
-            const suggestions = this.generateSuggestions(this.selectedText);
-            list.innerHTML = '';
+        // Get current editor content for context
+        const editor = document.getElementById('editorContent');
+        const editorContent = editor ? editor.innerText : '';
 
+        try {
+            // Get suggestions from active agents
+            const suggestions = [];
+            const activeAgents = this.agents.filter(a => a.active).slice(0, 4);
+
+            for (const agent of activeAgents) {
+                const contextualMessage = `[Context - Current Script: "${editorContent.substring(0, 1000)}"]\n\nPlease provide a brief improvement for this text: "${this.selectedText}"`;
+
+                const response = await fetch(`/api/agents/${agent.name.toLowerCase().replace(' ', '-')}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: contextualMessage,
+                        conversationId: `smart-replace-${Date.now()}`
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.response) {
+                    suggestions.push({
+                        agent,
+                        text: data.response.substring(0, 200) // Limit length
+                    });
+                }
+            }
+
+            // Display suggestions
+            list.innerHTML = '';
             suggestions.forEach(suggestion => {
                 const item = document.createElement('div');
                 item.className = 'suggestion-item';
@@ -400,41 +432,16 @@ class StoryDriveApp {
                 item.addEventListener('click', () => this.applySuggestion(suggestion.text));
                 list.appendChild(item);
             });
-        }, 500);
-    }
 
-    generateSuggestions(text) {
-        // Simulate agent suggestions based on selected text
-        const suggestions = [];
-
-        // Get 3-4 active agents to provide suggestions
-        const activeAgents = this.agents.filter(a => a.active).slice(0, 4);
-
-        activeAgents.forEach(agent => {
-            let suggestion = '';
-
-            switch(agent.id) {
-                case 'plot':
-                    suggestion = `${text} [This scene advances the main conflict]`;
-                    break;
-                case 'character':
-                    suggestion = `${text} [revealing deeper character motivation]`;
-                    break;
-                case 'dialog':
-                    suggestion = `"${text}" she said, her voice barely above a whisper.`;
-                    break;
-                case 'world':
-                    suggestion = `${text} The atmosphere thick with tension.`;
-                    break;
-                default:
-                    suggestion = `Enhanced: ${text}`;
+            if (suggestions.length === 0) {
+                list.innerHTML = '<div class="no-suggestions">No suggestions available</div>';
             }
-
-            suggestions.push({ agent, text: suggestion });
-        });
-
-        return suggestions;
+        } catch (error) {
+            console.error('Error getting suggestions:', error);
+            list.innerHTML = '<div class="error">Failed to get suggestions</div>';
+        }
     }
+
 
     applySuggestion(suggestionText) {
         const selection = window.getSelection();
@@ -546,7 +553,7 @@ class StoryDriveApp {
         }
     }
 
-    sendMessage(message) {
+    async sendMessage(message) {
         if (!message.trim()) return;
 
         const messagesContainer = document.getElementById('chatMessages');
@@ -556,18 +563,47 @@ class StoryDriveApp {
         const userMessage = this.createMessage(message, 'user');
         messagesContainer.appendChild(userMessage);
 
-        // Simulate agent response
-        setTimeout(() => {
-            const response = this.generateAgentResponse(message);
-            const agentMessage = this.createMessage(response, 'agent');
-            messagesContainer.appendChild(agentMessage);
+        // Get current editor content for context
+        const editor = document.getElementById('editorContent');
+        const editorContent = editor ? editor.innerText : '';
+
+        // Build contextual message with editor content
+        let contextualMessage = message;
+        if (editorContent) {
+            contextualMessage = `[Context - Current Script: "${editorContent.substring(0, 1000)}"]\n\n${message}`;
+        }
+
+        try {
+            // Call the real API endpoint
+            const response = await fetch(`/api/agents/${this.selectedAgent.name.toLowerCase().replace(' ', '-')}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: contextualMessage,
+                    conversationId: `story-drive-${Date.now()}`
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.response) {
+                const agentMessage = this.createMessage(data.response, 'agent');
+                messagesContainer.appendChild(agentMessage);
+            } else {
+                const errorMessage = this.createMessage('Sorry, I encountered an error. Please try again.', 'agent');
+                messagesContainer.appendChild(errorMessage);
+            }
 
             // Scroll to bottom
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 500);
-
-        // Scroll to bottom for user message
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } catch (error) {
+            console.error('Error sending message:', error);
+            const errorMessage = this.createMessage('Failed to connect to agent. Please try again.', 'agent');
+            messagesContainer.appendChild(errorMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
     }
 
     createMessage(text, sender) {
@@ -594,21 +630,6 @@ class StoryDriveApp {
         return message;
     }
 
-    generateAgentResponse(message) {
-        // Simulate different responses based on selected agent
-        const responses = {
-            'plot': 'This scene could benefit from higher stakes. Consider what your protagonist stands to lose.',
-            'character': 'Your character\'s motivation here seems unclear. What do they really want in this moment?',
-            'dialog': 'Try making the dialogue more subtext-heavy. What aren\'t they saying directly?',
-            'world': 'The setting could work harder here. How does the environment reflect the emotional state?',
-            'genre': 'For this genre, readers expect more tension at this point in the story.',
-            'editor': 'Consider breaking this into shorter paragraphs for better pacing.',
-            'reader': 'As a reader, I\'m curious about what happens next, but I need more context.',
-            'narrative': 'The narrative flow is good, but you might want to vary your sentence structure.'
-        };
-
-        return responses[this.selectedAgent?.id] || 'That\'s an interesting point. Let me help you develop it further.';
-    }
 
     // Panel Resizing
     setupResizeHandles() {
@@ -744,9 +765,11 @@ class StoryDriveApp {
             }
 
             this.contextBroadcastTimer = setTimeout(() => {
+                const content = editor.innerText;
                 this.broadcastContext('content-change', {
-                    content: editor.innerText.substring(0, 500),
-                    wordCount: editor.innerText.split(/\s+/).length
+                    content: content.substring(0, 500),
+                    wordCount: content.split(/\s+/).length,
+                    fullContent: content
                 });
             }, 100);
         });
@@ -760,7 +783,7 @@ class StoryDriveApp {
         });
     }
 
-    broadcastContext(type, data) {
+    async broadcastContext(type, data) {
         // Show pulse animation on active agents
         const activeAgents = document.querySelectorAll('.agent-card .agent-status:not(.offline)');
         activeAgents.forEach(status => {
@@ -772,6 +795,28 @@ class StoryDriveApp {
 
         // Update context indicator in chat
         this.updateContextIndicator();
+
+        // Store context for next API call
+        this.currentContext = data.fullContent || '';
+
+        // Update session context in backend
+        try {
+            await fetch('/api/context/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    context: data.fullContent,
+                    metadata: {
+                        wordCount: data.wordCount,
+                        lastUpdate: new Date().toISOString()
+                    }
+                })
+            });
+        } catch (error) {
+            console.error('Failed to update context:', error);
+        }
 
         // Log context broadcast (for debugging)
         console.log('Context broadcast:', type, data);
