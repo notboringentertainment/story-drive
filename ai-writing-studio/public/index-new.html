@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Writing Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .mode-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .mode-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .mode-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .mode-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .mode-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .mode-features li {
+            padding: 8px 0;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+
+        .mode-features li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .mode-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .badge.beta {
+            background: #f59e0b;
+        }
+
+        .settings-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .settings-link a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .settings-link a:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .modes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AI Writing Studio</h1>
+            <p>Choose your creative writing experience</p>
+        </div>
+
+        <div class="modes-grid">
+            <!-- Writing Studio Mode -->
+            <div class="mode-card" onclick="goToWritingStudio()">
+                <div class="mode-icon">📝</div>
+                <h2 class="mode-title">Writing Studio <span class="badge">NEW</span></h2>
+                <p class="mode-description">
+                    Full-featured document editor with AI assistance. Write your story while getting real-time feedback from specialized AI agents.
+                </p>
+                <ul class="mode-features">
+                    <li>Rich text editor with formatting</li>
+                    <li>Side-by-side layout with AI chat</li>
+                    <li>Context-aware agent responses</li>
+                    <li>Auto-save functionality</li>
+                    <li>Document persistence</li>
+                </ul>
+                <button class="mode-button">Launch Writing Studio</button>
+            </div>
+
+            <!-- Individual Agents Mode -->
+            <div class="mode-card" onclick="goToIndividualMode()">
+                <div class="mode-icon">🤖</div>
+                <h2 class="mode-title">Individual Agents</h2>
+                <p class="mode-description">
+                    Chat one-on-one with specialized writing agents. Perfect for focused feedback on specific aspects of your story.
+                </p>
+                <ul class="mode-features">
+                    <li>8 specialized writing agents</li>
+                    <li>Deep expertise in each domain</li>
+                    <li>Focused conversations</li>
+                    <li>Quick consultations</li>
+                    <li>Mobile-friendly interface</li>
+                </ul>
+                <button class="mode-button">Chat with Agents</button>
+            </div>
+
+            <!-- Team Mode -->
+            <div class="mode-card" onclick="goToTeamMode()">
+                <div class="mode-icon">🎭</div>
+                <h2 class="mode-title">Team Mode <span class="badge beta">BETA</span></h2>
+                <p class="mode-description">
+                    Collaborate with multiple AI agents simultaneously. Get diverse perspectives and comprehensive feedback on your writing.
+                </p>
+                <ul class="mode-features">
+                    <li>Multiple agents in one chat</li>
+                    <li>Collaborative feedback</li>
+                    <li>Different perspectives</li>
+                    <li>Comprehensive analysis</li>
+                    <li>Team discussions</li>
+                </ul>
+                <button class="mode-button">Activate Team Mode</button>
+            </div>
+        </div>
+
+        <div class="settings-link">
+            <a href="/enable-editor.html">⚙️ Settings & Configuration</a>
+        </div>
+    </div>
+
+    <script>
+        // Check editor status
+        function checkEditorStatus() {
+            const editorEnabled = localStorage.getItem('ENABLE_DOCUMENT_EDITOR') === 'true';
+
+            // Update Writing Studio card if editor is disabled
+            if (!editorEnabled) {
+                const studioCard = document.querySelector('.mode-card');
+                const badge = studioCard.querySelector('.badge');
+                badge.textContent = 'SETUP REQUIRED';
+                badge.style.background = '#ef4444';
+            }
+        }
+
+        function goToWritingStudio() {
+            const editorEnabled = localStorage.getItem('ENABLE_DOCUMENT_EDITOR') === 'true';
+
+            if (!editorEnabled) {
+                if (confirm('Document editor is not enabled. Would you like to enable it now?')) {
+                    localStorage.setItem('ENABLE_DOCUMENT_EDITOR', 'true');
+                    window.location.href = '/writing-studio.html';
+                } else {
+                    window.location.href = '/enable-editor.html';
+                }
+            } else {
+                window.location.href = '/writing-studio.html';
+            }
+        }
+
+        function goToIndividualMode() {
+            window.location.href = '/index.html';
+        }
+
+        function goToTeamMode() {
+            window.location.href = '/team-mode.html';
+        }
+
+        // Check on load
+        window.addEventListener('DOMContentLoaded', checkEditorStatus);
+    </script>
+</body>
+</html>

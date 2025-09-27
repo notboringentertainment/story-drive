@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple TipTap Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .editor {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            min-height: 300px;
+            padding: 20px;
+        }
+
+        .editor .ProseMirror {
+            outline: none;
+            min-height: 250px;
+        }
+
+        .toolbar {
+            padding: 10px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .toolbar button {
+            margin: 0 4px;
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .toolbar button:hover {
+            background: #f0f0f0;
+        }
+
+        .toolbar button.is-active {
+            background: #667eea;
+            color: white;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple TipTap Editor Test</h1>
+    <p>This is a minimal test to verify TipTap loads from CDN correctly.</p>
+
+    <div id="editor-container">
+        <div class="toolbar" id="toolbar">
+            <button onclick="toggleBold()">Bold</button>
+            <button onclick="toggleItalic()">Italic</button>
+            <button onclick="toggleHeading(1)">H1</button>
+            <button onclick="toggleHeading(2)">H2</button>
+            <button onclick="toggleBulletList()">Bullet List</button>
+        </div>
+        <div class="editor" id="editor"></div>
+    </div>
+
+    <div id="status">
+        <h3>Status</h3>
+        <div id="status-content">Loading editor...</div>
+    </div>
+
+    <!-- Try loading from JSDELIVR with specific files -->
+    <script src="https://cdn.jsdelivr.net/npm/prosemirror-state@1/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prosemirror-view@1/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prosemirror-model@1/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tiptap/core@2.1.13/dist/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tiptap/pm@2.1.13/dist/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@2.1.13/dist/index.umd.min.js"></script>
+
+    <script>
+        let editor = null;
+        const statusDiv = document.getElementById('status-content');
+
+        function updateStatus(message, isError = false) {
+            statusDiv.innerHTML = message;
+            statusDiv.style.color = isError ? 'red' : 'green';
+        }
+
+        // Wait for scripts to load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeEditor, 100);
+        });
+
+        function initializeEditor() {
+            try {
+                console.log('Checking for TipTap modules...');
+
+                // Log what's available on window
+                console.log('Window keys:', Object.keys(window).filter(k => k.includes('tiptap') || k.includes('Tiptap')));
+                console.log('@tiptap/core:', window['@tiptap/core']);
+                console.log('@tiptap/starter-kit:', window['@tiptap/starter-kit']);
+
+                // Try different ways to access the modules
+                const Core = window['@tiptap/core'] || window.TiptapCore || window.Tiptap;
+                const StarterKit = window['@tiptap/starter-kit'] || window.TiptapStarterKit;
+
+                if (!Core || !Core.Editor) {
+                    throw new Error('TipTap Core not found');
+                }
+
+                updateStatus('TipTap modules found, initializing editor...');
+
+                // Create editor with minimal setup
+                if (StarterKit && StarterKit.StarterKit) {
+                    // Use StarterKit if available
+                    editor = new Core.Editor({
+                        element: document.getElementById('editor'),
+                        extensions: [
+                            StarterKit.StarterKit.configure({
+                                heading: {
+                                    levels: [1, 2, 3]
+                                }
+                            })
+                        ],
+                        content: '<p>Start typing here...</p>',
+                        autofocus: true
+                    });
+                } else {
+                    // Create without StarterKit - just basic editor
+                    editor = new Core.Editor({
+                        element: document.getElementById('editor'),
+                        content: '<p>Start typing here (basic mode - no StarterKit)...</p>',
+                        autofocus: true
+                    });
+                }
+
+                updateStatus('✅ Editor initialized successfully!');
+
+                // Update toolbar button states
+                editor.on('selectionUpdate', updateToolbar);
+
+            } catch (error) {
+                console.error('Error initializing editor:', error);
+                updateStatus('Error: ' + error.message, true);
+
+                // Try a fallback approach
+                tryFallbackEditor();
+            }
+        }
+
+        function tryFallbackEditor() {
+            updateStatus('Trying fallback: contentEditable...');
+
+            const editorDiv = document.getElementById('editor');
+            editorDiv.contentEditable = true;
+            editorDiv.innerHTML = '<p>Using fallback contentEditable mode. Type here...</p>';
+
+            updateStatus('⚠️ Using fallback contentEditable (TipTap failed to load)');
+        }
+
+        function toggleBold() {
+            if (editor) {
+                editor.chain().focus().toggleBold().run();
+            } else {
+                document.execCommand('bold');
+            }
+        }
+
+        function toggleItalic() {
+            if (editor) {
+                editor.chain().focus().toggleItalic().run();
+            } else {
+                document.execCommand('italic');
+            }
+        }
+
+        function toggleHeading(level) {
+            if (editor) {
+                editor.chain().focus().toggleHeading({ level }).run();
+            } else {
+                document.execCommand('formatBlock', false, `h${level}`);
+            }
+        }
+
+        function toggleBulletList() {
+            if (editor) {
+                editor.chain().focus().toggleBulletList().run();
+            } else {
+                document.execCommand('insertUnorderedList');
+            }
+        }
+
+        function updateToolbar() {
+            if (!editor) return;
+
+            // Update button states based on current selection
+            const buttons = document.querySelectorAll('.toolbar button');
+            buttons.forEach(btn => {
+                btn.classList.remove('is-active');
+            });
+        }
+    </script>
+</body>
+</html>

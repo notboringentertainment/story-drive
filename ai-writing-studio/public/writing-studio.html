@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Writing Studio - Document Editor</title>
+
+    <!-- Core styles -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .studio-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .studio-header h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-controls button {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .header-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #main-container {
+            background: white;
+            margin: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Chat styles from original */
+        .chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .agents-list {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .agent-chip {
+            padding: 8px 14px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .agent-chip:hover {
+            background: #e0e0e0;
+        }
+
+        .agent-chip.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 70%;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.agent .message-bubble {
+            background: white;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .context-indicator {
+            font-size: 12px;
+            color: #666;
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .context-indicator.active {
+            display: block;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        .send-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Feature flag notice */
+        .feature-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .feature-notice.show {
+            display: block;
+        }
+    </style>
+
+    <!-- Editor styles -->
+    <link rel="stylesheet" href="editor/editor-styles.css">
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="editor/layout-styles.css">
+</head>
+<body>
+    <div class="studio-header">
+        <h1>📝 AI Writing Studio</h1>
+        <div class="header-controls">
+            <button onclick="toggleEditorMode()">Toggle Editor</button>
+            <button onclick="saveDocument()">Save Document</button>
+            <button onclick="window.location.href='/index-new.html'" style="background: rgba(255,255,255,0.3);">🏠 Home</button>
+            <button onclick="window.location.href='/index.html'" style="background: rgba(255,255,255,0.2);">🤖 Individual</button>
+            <button onclick="window.location.href='/team-mode.html'" style="background: rgba(255,255,255,0.2);">🎭 Team</button>
+        </div>
+    </div>
+
+    <div class="feature-notice" id="feature-notice">
+        Document editor is disabled. Enable it in settings to use the full writing studio.
+    </div>
+
+    <div id="main-container">
+        <!-- Layout Manager will inject panels here -->
+    </div>
+
+    <!-- Load modules -->
+    <script src="editor/auto-save-manager.js"></script>
+    <script src="editor/editor-module-simple.js"></script>
+    <script src="editor/layout-manager.js"></script>
+
+    <script>
+        let currentAgent = null;
+        let conversationId = null;
+        let isLoading = false;
+        let editorEnabled = false;
+        let teamMode = false;
+        let teamLoaded = false;
+
+        // Check if editor is enabled
+        function checkEditorEnabled() {
+            editorEnabled = localStorage.getItem('ENABLE_DOCUMENT_EDITOR') === 'true';
+
+            if (!editorEnabled) {
+                document.getElementById('feature-notice').classList.add('show');
+                // Show only chat in single column
+                setupChatOnly();
+            } else {
+                document.getElementById('feature-notice').classList.remove('show');
+                // Initialize side-by-side layout
+                setupSideBySide();
+            }
+        }
+
+        // Setup chat-only mode
+        function setupChatOnly() {
+            document.getElementById('main-container').innerHTML = `
+                <div class="chat-container">
+                    <div class="agents-list" id="agents-list">
+                        <!-- Agents will be loaded here -->
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div style="text-align: center; color: #999; padding: 50px;">
+                            Select an agent to start writing!
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input
+                            type="text"
+                            id="chat-input"
+                            class="chat-input"
+                            placeholder="Ask your writing question..."
+                            disabled
+                        />
+                        <button id="send-btn" class="send-btn" disabled>Send</button>
+                    </div>
+                </div>
+            `;
+
+            loadAgents();
+            setupChatHandlers();
+        }
+
+        // Setup side-by-side mode
+        function setupSideBySide() {
+            // Initialize layout manager
+            LayoutManager.init('main-container');
+
+            // Wait for layout to be ready, then initialize editor
+            setTimeout(() => {
+                // Initialize editor in the editor panel
+                const editorWrapper = document.getElementById('editor-content-wrapper');
+                if (editorWrapper) {
+                    const initialized = EditorModule.init('editor-content-wrapper');
+                    console.log('Editor initialized:', initialized);
+
+                    // Make EditorModule globally accessible for debugging
+                    window.EditorModule = EditorModule;
+                }
+
+                // Setup chat in the chat panel
+                const chatWrapper = document.getElementById('chat-content-wrapper');
+                if (chatWrapper) {
+                    chatWrapper.innerHTML = `
+                        <div class="chat-container">
+                            <div class="agents-list" id="agents-list">
+                                <!-- Agents will be loaded here -->
+                            </div>
+                            <div class="chat-messages" id="chat-messages">
+                                <div style="text-align: center; color: #999; padding: 50px;">
+                                    Select an agent to get AI assistance while writing!
+                                </div>
+                            </div>
+                            <div class="chat-input-container">
+                                <div class="context-indicator" id="context-indicator">
+                                    📝 Context will be included from editor
+                                </div>
+                                <div class="chat-input-wrapper">
+                                    <input
+                                        type="text"
+                                        id="chat-input"
+                                        class="chat-input"
+                                        placeholder="Ask your writing question..."
+                                        disabled
+                                    />
+                                    <button id="send-btn" class="send-btn" disabled>Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    loadAgents();
+                    setupChatHandlers();
+                }
+            }, 100);
+        }
+
+        // Load available agents
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/agents/available');
+                const data = await response.json();
+
+                const agentsList = document.getElementById('agents-list');
+                if (agentsList) {
+                    // Add team mode option first
+                    let agentsHTML = `
+                        <div class="agent-chip team-chip" onclick="selectTeamMode()" style="background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%); color: white;">
+                            🎭 Team Mode
+                        </div>
+                    `;
+
+                    // Then add individual agents
+                    agentsHTML += data.agents.map(agent => `
+                        <div class="agent-chip" onclick="selectAgent('${agent.id}')">
+                            ${agent.icon} ${agent.name}
+                        </div>
+                    `).join('');
+
+                    agentsList.innerHTML = agentsHTML;
+                }
+            } catch (error) {
+                console.error('Failed to load agents:', error);
+            }
+        }
+
+        // Select team mode
+        async function selectTeamMode() {
+            if (isLoading) return;
+
+            // Update UI
+            document.querySelectorAll('.agent-chip').forEach(chip => chip.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            teamMode = true;
+            currentAgent = null;
+
+            // Load team if not already loaded
+            if (!teamLoaded) {
+                try {
+                    const response = await fetch('/api/team/load', {
+                        method: 'POST'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        teamLoaded = true;
+                        console.log('Team loaded successfully');
+                    }
+                } catch (error) {
+                    console.error('Failed to load team:', error);
+                    return;
+                }
+            }
+
+            // Update chat
+            conversationId = `team-${Date.now()}`;
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = `
+                <div class="message agent">
+                    <div class="message-bubble" style="background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%); color: white;">
+                        🎭 <strong>Team Mode Activated!</strong><br><br>
+                        You now have access to the entire creative writing team:<br>
+                        • Plot Architect • Character Psychologist<br>
+                        • World Builder • Dialog Specialist<br>
+                        • Editor • Beta Reader • And more!<br><br>
+                        Ask any question and the most relevant experts will collaborate to help you!
+                    </div>
+                </div>
+            `;
+
+            // Enable input
+            document.getElementById('chat-input').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            document.getElementById('chat-input').placeholder = 'Ask the team for collaborative feedback...';
+            document.getElementById('chat-input').focus();
+        }
+
+        // Select an agent
+        async function selectAgent(agentId) {
+            if (isLoading) return;
+
+            teamMode = false;
+
+            // Update UI
+            document.querySelectorAll('.agent-chip').forEach(chip => chip.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            try {
+                const response = await fetch(`/api/agents/${agentId}/load`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentAgent = agentId;
+                    conversationId = `${agentId}-${Date.now()}`;
+
+                    // Update chat
+                    const chatMessages = document.getElementById('chat-messages');
+                    chatMessages.innerHTML = `
+                        <div class="message agent">
+                            <div class="message-bubble">
+                                Hello! I'm ${data.agent.name}, your ${data.agent.role}.
+                                How can I help you with your writing today?
+                            </div>
+                        </div>
+                    `;
+
+                    // Enable input
+                    document.getElementById('chat-input').disabled = false;
+                    document.getElementById('send-btn').disabled = false;
+                    document.getElementById('chat-input').focus();
+
+                    // If editor is enabled, we can provide context
+                    if (editorEnabled && EditorModule.getContent) {
+                        console.log('Editor content available for context');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load agent:', error);
+            }
+        }
+
+        // Setup chat event handlers
+        function setupChatHandlers() {
+            const input = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+            }
+
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+        }
+
+        // Send message to agent or team
+        async function sendMessage() {
+            if ((!currentAgent && !teamMode) || isLoading) return;
+
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            isLoading = true;
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = true;
+
+            // Add user message
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML += `
+                <div class="message user">
+                    <div class="message-bubble">${message}</div>
+                </div>
+            `;
+
+            input.value = '';
+
+            // Build context from editor if available
+            let contextInfo = {
+                currentParagraph: '',
+                selectedText: '',
+                wordCount: 0,
+                fullContent: ''
+            };
+
+            if (editorEnabled && typeof EditorModule !== 'undefined' && EditorModule.getContent) {
+                // Get various context elements
+                contextInfo.selectedText = EditorModule.getSelectedText ? EditorModule.getSelectedText() : '';
+                contextInfo.currentParagraph = EditorModule.getCurrentParagraph ? EditorModule.getCurrentParagraph() : '';
+
+                const content = EditorModule.getContent();
+                console.log('Editor content retrieved:', content); // Debug
+
+                if (content) {
+                    contextInfo.wordCount = content.wordCount || 0;
+                    // Limit full content to first 500 chars for context
+                    contextInfo.fullContent = content.text ? content.text.substring(0, 500) : '';
+                    console.log('Context info:', contextInfo); // Debug
+                }
+            } else {
+                console.log('Editor not available or not enabled'); // Debug
+            }
+
+            // Build enriched message with context
+            let enrichedMessage = message;
+            let contextType = 'none';
+
+            if (contextInfo.selectedText) {
+                enrichedMessage = `[Context - Selected Text: "${contextInfo.selectedText}"]\n\n${message}`;
+                contextType = 'selected';
+            } else if (contextInfo.currentParagraph) {
+                enrichedMessage = `[Context - Current Paragraph: "${contextInfo.currentParagraph}"]\n\n${message}`;
+                contextType = 'paragraph';
+            } else if (contextInfo.fullContent && contextInfo.fullContent.length > 0) {
+                enrichedMessage = `[Context - Document Preview (${contextInfo.wordCount} words total): "${contextInfo.fullContent}..."]\n\n${message}`;
+                contextType = 'document';
+            }
+
+            console.log('Context type:', contextType);
+            console.log('Enriched message:', enrichedMessage);
+
+            // Update context indicator
+            updateContextIndicator(contextType, contextInfo.wordCount);
+
+            try {
+                let response, data;
+
+                if (teamMode) {
+                    // Send to team collaboration endpoint
+                    response = await fetch('/api/team/collaborate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            task: enrichedMessage,
+                            options: {
+                                shareContext: true,
+                                synthesize: true,
+                                maxAgents: 3
+                            }
+                        })
+                    });
+
+                    data = await response.json();
+
+                    if (data.success && data.collaboration) {
+                        // Add team responses
+                        if (data.collaboration.responses) {
+                            data.collaboration.responses.forEach(resp => {
+                                const agentMessage = resp.response || resp.message;
+                                chatMessages.innerHTML += `
+                                    <div class="message agent">
+                                        <div style="font-size: 0.8em; color: #667eea; margin-bottom: 5px; font-weight: bold;">
+                                            ${resp.agent}
+                                        </div>
+                                        <div class="message-bubble">
+                                            ${agentMessage.replace(/\n/g, '<br>')}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        // Add synthesis if available
+                        if (data.collaboration.synthesis && data.collaboration.synthesis.summary) {
+                            chatMessages.innerHTML += `
+                                <div class="message agent">
+                                    <div style="font-size: 0.8em; color: #4ECDC4; margin-bottom: 5px; font-weight: bold;">
+                                        🎯 Team Synthesis
+                                    </div>
+                                    <div class="message-bubble" style="background: #f0f9ff; color: #333;">
+                                        ${data.collaboration.synthesis.summary.replace(/\n/g, '<br>')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    // Send to individual agent
+                    response = await fetch(`/api/agents/${currentAgent}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: enrichedMessage,
+                            conversationId: conversationId
+                        })
+                    });
+
+                    data = await response.json();
+
+                    if (data.success) {
+                        chatMessages.innerHTML += `
+                            <div class="message agent">
+                                <div class="message-bubble">${data.response.message.replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                isLoading = false;
+                sendBtn.disabled = false;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Toggle editor mode
+        function toggleEditorMode() {
+            const currentState = localStorage.getItem('ENABLE_DOCUMENT_EDITOR') === 'true';
+            localStorage.setItem('ENABLE_DOCUMENT_EDITOR', !currentState);
+
+            // Show feedback
+            if (!currentState) {
+                alert('Document Editor enabled! Page will reload.');
+            } else {
+                alert('Document Editor disabled! Page will reload.');
+            }
+
+            location.reload();
+        }
+
+        // Save document
+        function saveDocument() {
+            if (editorEnabled && EditorModule.getContent) {
+                const content = EditorModule.getContent();
+                console.log('Document saved:', content);
+                alert('Document saved to localStorage!');
+            } else {
+                alert('Editor is not enabled');
+            }
+        }
+
+        // Update context indicator
+        function updateContextIndicator(type, wordCount) {
+            const indicator = document.getElementById('context-indicator');
+            if (!indicator) return;
+
+            if (editorEnabled && type !== 'none') {
+                indicator.classList.add('active');
+                switch(type) {
+                    case 'selected':
+                        indicator.innerHTML = '✂️ Including selected text as context';
+                        break;
+                    case 'paragraph':
+                        indicator.innerHTML = '📝 Including current paragraph as context';
+                        break;
+                    case 'document':
+                        indicator.innerHTML = `📄 Including document preview (${wordCount} words)`;
+                        break;
+                }
+            } else {
+                indicator.classList.remove('active');
+            }
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                if (indicator) {
+                    indicator.classList.remove('active');
+                }
+            }, 3000);
+        }
+
+        // Monitor editor for context availability
+        function monitorEditorContext() {
+            if (!editorEnabled) return;
+
+            setInterval(() => {
+                if (EditorModule && EditorModule.getContent) {
+                    const content = EditorModule.getContent();
+                    const contextIndicator = document.getElementById('context-indicator');
+
+                    if (content && content.text && content.text.length > 0) {
+                        if (contextIndicator && currentAgent) {
+                            contextIndicator.innerHTML = `📝 Document: ${content.wordCount || 0} words available for context`;
+                            contextIndicator.classList.add('active');
+                        }
+                    }
+                }
+            }, 5000); // Check every 5 seconds
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkEditorEnabled();
+            setTimeout(monitorEditorContext, 2000); // Start monitoring after setup
+        });
+    </script>
+</body>
+</html>

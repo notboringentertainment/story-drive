@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enable Document Editor</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        .status.enabled {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.disabled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        .enable-btn {
+            background: #10b981;
+            color: white;
+        }
+        .enable-btn:hover {
+            background: #059669;
+        }
+        .disable-btn {
+            background: #ef4444;
+            color: white;
+        }
+        .disable-btn:hover {
+            background: #dc2626;
+        }
+        .go-btn {
+            background: #667eea;
+            color: white;
+        }
+        .go-btn:hover {
+            background: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Document Editor Settings</h1>
+
+        <div id="status" class="status">
+            Checking status...
+        </div>
+
+        <div id="actions">
+            <button id="toggle-btn" onclick="toggleEditor()">Toggle Editor</button>
+            <button class="go-btn" onclick="goToStudio()">Go to Writing Studio</button>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 8px; text-align: left;">
+            <h3>What is the Document Editor?</h3>
+            <p>When enabled, you get:</p>
+            <ul>
+                <li>📝 Rich text editor with formatting tools</li>
+                <li>🎭 Side-by-side layout with AI agents</li>
+                <li>🔄 Auto-save functionality</li>
+                <li>🎯 Context-aware AI responses based on your writing</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const isEnabled = localStorage.getItem('ENABLE_DOCUMENT_EDITOR') === 'true';
+            const statusDiv = document.getElementById('status');
+            const toggleBtn = document.getElementById('toggle-btn');
+
+            if (isEnabled) {
+                statusDiv.className = 'status enabled';
+                statusDiv.innerHTML = '✅ Document Editor is ENABLED';
+                toggleBtn.className = 'disable-btn';
+                toggleBtn.textContent = 'Disable Editor';
+            } else {
+                statusDiv.className = 'status disabled';
+                statusDiv.innerHTML = '❌ Document Editor is DISABLED';
+                toggleBtn.className = 'enable-btn';
+                toggleBtn.textContent = 'Enable Editor';
+            }
+        }
+
+        function toggleEditor() {
+            const currentState = localStorage.getItem('ENABLE_DOCUMENT_EDITOR') === 'true';
+            localStorage.setItem('ENABLE_DOCUMENT_EDITOR', !currentState);
+            checkStatus();
+
+            // Show notification
+            if (!currentState) {
+                alert('✅ Document Editor has been ENABLED!\n\nClick "Go to Writing Studio" to use it.');
+            } else {
+                alert('❌ Document Editor has been DISABLED.\n\nThe Writing Studio will show chat-only mode.');
+            }
+        }
+
+        function goToStudio() {
+            window.location.href = '/writing-studio.html';
+        }
+
+        // Check on load
+        window.addEventListener('DOMContentLoaded', checkStatus);
+    </script>
+</body>
+</html>

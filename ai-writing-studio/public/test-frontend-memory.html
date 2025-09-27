@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Service Frontend Test</title>
+    <script src="/services/MemoryService.js"></script>
+</head>
+<body>
+    <h1>Memory Service Frontend Test</h1>
+    <div id="results"></div>
+
+    <script>
+        const memoryService = new MemoryService();
+        const resultsDiv = document.getElementById('results');
+
+        function log(message, isSuccess = true) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = isSuccess ? 'green' : 'red';
+            resultsDiv.appendChild(p);
+        }
+
+        async function runTests() {
+            log('Starting Memory Service frontend tests...');
+
+            try {
+                // Test 1: Add conversation
+                log('Test 1: Adding conversation...');
+                const addResult = await memoryService.addConversation(
+                    'plot-architect',
+                    'user',
+                    'Frontend test message'
+                );
+                log('✓ Added conversation: ' + addResult.entry.timestamp);
+
+                // Test 2: Get all conversations
+                log('Test 2: Getting all conversations...');
+                const allConvs = await memoryService.getAllConversations();
+                log(`✓ Retrieved ${allConvs.metadata.returned} conversations`);
+
+                // Test 3: Get agent conversations
+                log('Test 3: Getting agent-specific conversations...');
+                const agentConvs = await memoryService.getAgentConversations('plot-architect');
+                log(`✓ Retrieved ${agentConvs.metadata.returned} conversations for plot-architect`);
+
+                // Test 4: Get context
+                log('Test 4: Getting agent context...');
+                const context = await memoryService.getAgentContext('plot-architect', true);
+                log(`✓ Retrieved context with ${context.context.length} messages`);
+
+                // Test 5: Format and group conversations
+                log('Test 5: Testing helper methods...');
+                if (allConvs.conversations.length > 0) {
+                    const formatted = memoryService.formatConversationForDisplay(allConvs.conversations[0]);
+                    log(`✓ Formatted conversation with display time: ${formatted.displayTime}`);
+
+                    const grouped = memoryService.groupConversationsByAgent(allConvs.conversations);
+                    log(`✓ Grouped conversations by ${Object.keys(grouped).length} agents`);
+                }
+
+                // Test 6: Get stats
+                log('Test 6: Getting memory stats...');
+                const stats = await memoryService.getStats();
+                log(`✓ Stats: ${stats.totalSessions} sessions, ${stats.totalConversations} conversations`);
+
+                log('');
+                log('✅ All frontend tests passed successfully!', true);
+
+            } catch (error) {
+                log('❌ Test failed: ' + error.message, false);
+                console.error(error);
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>

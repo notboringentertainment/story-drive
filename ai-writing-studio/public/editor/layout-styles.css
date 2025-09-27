@@ -1,0 +1,257 @@
+/* Layout Manager Styles - Side-by-side layout for editor and chat */
+
+/* Main layout container */
+.app-layout {
+    display: flex;
+    height: calc(100vh - 40px);
+    gap: 0;
+    background: #f5f5f5;
+    position: relative;
+}
+
+/* Desktop layout */
+.app-layout.desktop {
+    flex-direction: row;
+}
+
+/* Mobile layout */
+.app-layout.mobile {
+    flex-direction: column;
+}
+
+/* Panels */
+.editor-panel,
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Desktop panel sizing */
+.app-layout.desktop .editor-panel {
+    flex: 0 0 60%;
+    min-width: 30%;
+    max-width: 70%;
+}
+
+.app-layout.desktop .chat-panel {
+    flex: 0 0 40%;
+    min-width: 30%;
+    max-width: 70%;
+}
+
+/* Mobile panel sizing */
+.app-layout.mobile .editor-panel,
+.app-layout.mobile .chat-panel {
+    flex: 1 1 50%;
+    max-width: 100%;
+    min-height: 300px;
+}
+
+/* Panel headers */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.panel-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.panel-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.panel-controls button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.panel-controls button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Panel content */
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+}
+
+/* Layout divider */
+.layout-divider {
+    width: 4px;
+    background: #d0d0d0;
+    cursor: col-resize;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.layout-divider:hover {
+    background: #667eea;
+}
+
+.layout-divider.active {
+    background: #764ba2;
+}
+
+/* Divider handle */
+.divider-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 40px;
+    cursor: col-resize;
+}
+
+.divider-handle::before {
+    content: '⋮⋮';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #888;
+    font-size: 12px;
+    letter-spacing: -2px;
+}
+
+/* Fullscreen modes */
+.app-layout.editor-fullscreen .chat-panel,
+.app-layout.editor-fullscreen .layout-divider,
+.app-layout.chat-fullscreen .editor-panel,
+.app-layout.chat-fullscreen .layout-divider {
+    display: none !important;
+}
+
+.app-layout.editor-fullscreen .editor-panel,
+.app-layout.chat-fullscreen .chat-panel {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+}
+
+/* Scrollbars for panels */
+.panel-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .app-layout {
+        gap: 0;
+    }
+
+    .layout-divider {
+        display: none !important;
+    }
+
+    .panel-header {
+        padding: 10px 15px;
+    }
+
+    .panel-header h3 {
+        font-size: 1em;
+    }
+
+    /* Stack panels with border between */
+    .app-layout.mobile .editor-panel {
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    /* Allow panels to be collapsible on mobile */
+    .panel-header {
+        cursor: pointer;
+    }
+
+    .panel-content {
+        transition: max-height 0.3s ease;
+    }
+
+    /* Optional: Add toggle indicators */
+    .panel-header::after {
+        content: '▼';
+        margin-left: auto;
+        transition: transform 0.3s;
+    }
+
+    .panel-collapsed .panel-header::after {
+        transform: rotate(-90deg);
+    }
+
+    .panel-collapsed .panel-content {
+        max-height: 0;
+        overflow: hidden;
+    }
+}
+
+/* Animation for layout changes */
+.app-layout:not(.mobile) .editor-panel,
+.app-layout:not(.mobile) .chat-panel {
+    transition: flex 0.3s ease;
+}
+
+/* Focus states */
+.editor-panel:focus-within {
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.chat-panel:focus-within {
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* Loading states */
+.panel-content.loading {
+    position: relative;
+}
+
+.panel-content.loading::after {
+    content: 'Loading...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #888;
+    font-size: 14px;
+}
+
+/* Integration with existing styles */
+#editor-content-wrapper .editor-wrapper {
+    height: 100%;
+}
+
+#chat-content-wrapper > * {
+    height: 100%;
+}

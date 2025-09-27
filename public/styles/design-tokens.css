@@ -1,0 +1,246 @@
+/**
+ * Story-Drive Design Tokens
+ * Epic 3: Professional Writing Environment
+ *
+ * Import this file in your main CSS:
+ * @import './design-tokens.css';
+ */
+
+:root {
+  /* ============================================
+     COLOR SYSTEM - LIGHT MODE (Default)
+     ============================================ */
+
+  /* Base Colors */
+  --color-background: #FAFAFA;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F9FAFB;
+  --color-surface-active: #F3F4F6;
+
+  /* Text Colors */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-text-inverse: #FFFFFF;
+
+  /* UI Colors */
+  --color-divider: #E5E7EB;
+  --color-border: #D1D5DB;
+  --color-border-hover: #9CA3AF;
+
+  /* Accent Colors */
+  --color-accent-gradient: linear-gradient(135deg, #5B5FDE 0%, #7B7FFF 100%);
+  --color-accent: #5B5FDE;
+  --color-accent-hover: #6B6FEE;
+  --color-accent-active: #5155CE;
+  --color-accent-muted: rgba(91, 95, 222, 0.1);
+
+  /* Agent Persona Colors */
+  --agent-plot: #E11D48;
+  --agent-character: #9333EA;
+  --agent-world: #059669;
+  --agent-dialog: #0891B2;
+  --agent-genre: #EA580C;
+  --agent-editor: #EAB308;
+  --agent-reader: #6366F1;
+  --agent-narrative: #EC4899;
+
+  /* Status Colors */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+
+  /* Font Families */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Roboto', sans-serif;
+  --font-screenplay: 'Courier Prime', 'Courier New', 'Courier', monospace;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+
+  /* Font Sizes */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 24px;
+
+  /* Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  --leading-screenplay: 1.2;
+
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+
+  /* ============================================
+     SPACING SYSTEM
+     ============================================ */
+
+  --spacing-unit: 8px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* ============================================
+     LAYOUT DIMENSIONS
+     ============================================ */
+
+  /* Panel Widths */
+  --panel-agent-width: 240px;
+  --panel-agent-min: 180px;
+  --panel-agent-max: 320px;
+  --panel-chat-width: 360px;
+  --panel-chat-min: 320px;
+  --panel-chat-max: 480px;
+
+  /* Heights */
+  --nav-height: 48px;
+  --toolbar-height: 40px;
+  --input-height: 36px;
+  --button-height: 32px;
+  --agent-card-height: 56px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* ============================================
+     SHADOWS & ELEVATION
+     ============================================ */
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  /* ============================================
+     ANIMATION
+     ============================================ */
+
+  /* Timing Functions */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Durations */
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 700ms;
+
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+
+  --z-base: 0;
+  --z-panel: 10;
+  --z-overlay: 20;
+  --z-dropdown: 30;
+  --z-modal: 40;
+  --z-tooltip: 50;
+  --z-notification: 60;
+
+  /* ============================================
+     BREAKPOINTS (for reference in JS)
+     ============================================ */
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-theme="dark"],
+:root:has(#theme-toggle:checked) {
+  /* Base Colors */
+  --color-background: #1A1A1A;
+  --color-surface: #242424;
+  --color-surface-hover: #2A2A2A;
+  --color-surface-active: #323232;
+
+  /* Text Colors */
+  --color-text-primary: #E4E4E4;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted: #6B7280;
+  --color-text-inverse: #1A1A1A;
+
+  /* UI Colors */
+  --color-divider: #374151;
+  --color-border: #4B5563;
+  --color-border-hover: #6B7280;
+
+  /* Accent Colors (slightly dimmed for dark mode) */
+  --color-accent-gradient: linear-gradient(135deg, #5155CE 0%, #6B6FEE 100%);
+  --color-accent: #5155CE;
+  --color-accent-hover: #5B5FDE;
+  --color-accent-active: #4549BE;
+  --color-accent-muted: rgba(81, 85, 206, 0.15);
+
+  /* Shadows (adjusted for dark surfaces) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.6);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   MEDIA QUERY HELPERS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Apply dark mode colors automatically */
+    --color-background: #1A1A1A;
+    --color-surface: #242424;
+    /* ... rest of dark mode variables */
+  }
+}

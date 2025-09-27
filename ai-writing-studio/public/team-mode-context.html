@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Mode - AI Writing Studio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .left-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .context-section {
+            margin-bottom: 20px;
+        }
+
+        .context-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            color: #333;
+        }
+
+        #document-context {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Georgia', serif;
+            resize: vertical;
+        }
+
+        #document-context:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .word-count {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .team-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .team-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .member-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .chat-panel {
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 70%;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.team .message-bubble {
+            background: #f0f0f0;
+        }
+
+        .agent-name {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        .send-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎭 Team Mode - Context Aware</h1>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="window.location.href='/index-new.html'">🏠 Home</button>
+            <button class="nav-btn" onclick="window.location.href='/'">🤖 Individual</button>
+            <button class="nav-btn" onclick="window.location.href='/writing-studio.html'">📝 Writing Studio</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="context-section">
+                <label class="context-label">📝 Your Document Context</label>
+                <textarea
+                    id="document-context"
+                    placeholder="Paste or type your document text here for team feedback..."
+                ></textarea>
+                <div class="word-count">
+                    <span id="word-count">0</span> words
+                </div>
+            </div>
+
+            <div class="team-info">
+                <h3>✍️ Creative Writing Team</h3>
+                <p style="color: #666; margin-top: 5px;">Your expert panel is ready!</p>
+                <div class="team-members" id="team-members">
+                    <span class="member-badge">Plot Architect</span>
+                    <span class="member-badge">Character Psychologist</span>
+                    <span class="member-badge">World Builder</span>
+                    <span class="member-badge">Dialog Specialist</span>
+                    <span class="member-badge">Editor</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-panel">
+            <div class="chat-messages" id="chat-messages">
+                <div style="text-align: center; color: #999; padding: 50px;">
+                    <h3>Team Collaboration Mode</h3>
+                    <p>Add your document text on the left, then ask the team for feedback!</p>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <input
+                    type="text"
+                    id="chat-input"
+                    class="chat-input"
+                    placeholder="Ask the team about your writing..."
+                />
+                <button id="send-btn" class="send-btn" onclick="sendToTeam()">Send to Team</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let teamLoaded = false;
+        let isLoading = false;
+
+        // Update word count
+        document.getElementById('document-context').addEventListener('input', function() {
+            const text = this.value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            document.getElementById('word-count').textContent = words;
+        });
+
+        // Load team on startup
+        async function loadTeam() {
+            try {
+                const response = await fetch('/api/team/load', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    teamLoaded = true;
+                    console.log('Team loaded successfully');
+                }
+            } catch (error) {
+                console.error('Failed to load team:', error);
+            }
+        }
+
+        // Send message to team
+        async function sendToTeam() {
+            if (isLoading) return;
+
+            const input = document.getElementById('chat-input');
+            const task = input.value.trim();
+
+            if (!task) return;
+
+            isLoading = true;
+            const btn = document.getElementById('send-btn');
+            btn.disabled = true;
+
+            // Get document context
+            const contextTextarea = document.getElementById('document-context');
+            const documentText = contextTextarea.value.trim();
+
+            // Build message with context
+            let enrichedTask = task;
+            if (documentText) {
+                enrichedTask = `[Context - Current Paragraph: "${documentText}"]\n\n${task}`;
+            }
+
+            // Add user message to chat
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML += `
+                <div class="message user">
+                    <div class="message-bubble">
+                        ${task}
+                        ${documentText ? '<br><small style="opacity: 0.7">(with document context)</small>' : ''}
+                    </div>
+                </div>
+            `;
+
+            // Clear input
+            input.value = '';
+
+            // Show loading
+            chatMessages.innerHTML += `
+                <div id="loading" style="text-align: center; color: #999; padding: 20px;">
+                    Team is collaborating...
+                </div>
+            `;
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch('/api/team/collaborate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        task: enrichedTask,
+                        options: {
+                            shareContext: true,
+                            synthesize: true,
+                            maxAgents: 3
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove loading
+                const loading = document.getElementById('loading');
+                if (loading) loading.remove();
+
+                if (data.success && data.collaboration) {
+                    // Add team responses
+                    if (data.collaboration.responses) {
+                        data.collaboration.responses.forEach(response => {
+                            chatMessages.innerHTML += `
+                                <div class="message team">
+                                    <div class="agent-name">${response.agent}</div>
+                                    <div class="message-bubble">
+                                        ${response.message.replace(/\n/g, '<br>')}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    // Add synthesis if available
+                    if (data.collaboration.synthesis) {
+                        chatMessages.innerHTML += `
+                            <div class="message team">
+                                <div class="agent-name">Team Synthesis</div>
+                                <div class="message-bubble" style="background: #f0f9ff;">
+                                    ${data.collaboration.synthesis.replace(/\n/g, '<br>')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                chatMessages.innerHTML += `
+                    <div style="color: red; text-align: center; padding: 20px;">
+                        Error: ${error.message}
+                    </div>
+                `;
+            } finally {
+                isLoading = false;
+                btn.disabled = false;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Enter key to send
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendToTeam();
+            }
+        });
+
+        // Load team on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTeam();
+        });
+    </script>
+</body>
+</html>

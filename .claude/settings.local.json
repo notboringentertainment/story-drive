@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(md-tree:*)",
+      "Bash(pkill:*)",
+      "Bash(npm start)",
+      "Bash(chmod:*)",
+      "Bash(node:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(for file in /Users/ben/dev/story-drive/.bmad-core/agents/*.md)",
+      "Bash(do)",
+      "Bash(if grep -q \"bmad-core/core-config.yaml\" \"$file\")",
+      "Bash(then)",
+      "Bash(sed:*)",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(find:*)",
+      "Bash(awk:*)",
+      "Read(//Users/ben/Desktop/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

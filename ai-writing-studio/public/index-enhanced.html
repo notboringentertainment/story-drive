@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Writing Studio - Cross-Agent Memory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .status-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+        }
+
+        .agents-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            height: fit-content;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .agents-panel h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .agent-btn {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agent-btn:hover {
+            background: #f5f5f5;
+            transform: translateX(5px);
+        }
+
+        .agent-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .agent-icon {
+            font-size: 1.5em;
+        }
+
+        .agent-details {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .agent-role {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .agent-avatar {
+            font-size: 28px;
+            background: rgba(255,255,255,0.2);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-info .agent-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 3px;
+        }
+
+        .agent-info .agent-role {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message .icon {
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .message.user .icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message .content {
+            max-width: 70%;
+        }
+
+        .message .text {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            line-height: 1.5;
+        }
+
+        .message.user .text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message .timestamp {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message.user .timestamp {
+            text-align: left;
+        }
+
+        .message.error .text {
+            background: #fee;
+            color: #c00;
+            border: 1px solid #fcc;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #user-input:focus {
+            border-color: #667eea;
+        }
+
+        #send-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        #send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        #send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .memory-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            color: #667eea;
+        }
+
+        .memory-indicator.active {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AI Writing Studio</h1>
+            <p>Cross-Agent Memory System Active</p>
+            <div class="status-bar">
+                <span class="status-indicator"></span>
+                <span id="status-text">Ready</span>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <div class="agents-panel">
+                <h2>Writing Agents</h2>
+                <div id="agents-list"></div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-header" id="chat-header">
+                    <div class="agent-avatar">🤖</div>
+                    <div class="agent-info">
+                        <div class="agent-name">Select an Agent</div>
+                        <div class="agent-role">Choose from the panel</div>
+                    </div>
+                    <div class="agent-status">
+                        <span class="status-dot"></span>
+                        <span>Ready</span>
+                    </div>
+                </div>
+
+                <div class="chat-messages active" id="chat-messages">
+                    <div style="text-align: center; color: #999; padding: 50px;">
+                        Select an agent to begin your creative writing journey!
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <input
+                            type="text"
+                            id="user-input"
+                            placeholder="Type your message..."
+                            disabled
+                        />
+                        <button id="send-btn" disabled>Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="/services/MemoryService.js"></script>
+    <script src="/js/ChatWindowManager.js"></script>
+
+    <script>
+        let currentAgent = null;
+        let chatManager = null;
+        let memoryService = null;
+
+        // Initialize
+        async function init() {
+            chatManager = new ChatWindowManager();
+            memoryService = new MemoryService();
+
+            await loadAgents();
+            setupEventListeners();
+            updateStatus('Ready - Context injection active');
+        }
+
+        // Load available agents
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/agents/available');
+                const data = await response.json();
+
+                const agentsList = document.getElementById('agents-list');
+                agentsList.innerHTML = '';
+
+                data.agents.forEach(agent => {
+                    const btn = document.createElement('button');
+                    btn.className = 'agent-btn';
+                    btn.dataset.agentId = agent.id;
+                    btn.innerHTML = `
+                        <div class="agent-icon">${agent.icon}</div>
+                        <div class="agent-details">
+                            <div class="agent-name">${agent.name}</div>
+                            <div class="agent-role">${agent.role}</div>
+                        </div>
+                    `;
+
+                    btn.onclick = () => selectAgent(agent);
+                    agentsList.appendChild(btn);
+                });
+
+            } catch (error) {
+                console.error('Failed to load agents:', error);
+                updateStatus('Error loading agents', 'error');
+            }
+        }
+
+        // Select an agent
+        async function selectAgent(agent) {
+            // Update UI
+            document.querySelectorAll('.agent-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const selectedBtn = document.querySelector(`[data-agent-id="${agent.id}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('active');
+            }
+
+            // Load agent
+            try {
+                updateStatus(`Loading ${agent.name}...`);
+
+                const response = await fetch(`/api/agents/${agent.id}/load`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentAgent = agent;
+
+                    // Switch agent with chat manager
+                    await chatManager.switchAgent(agent.id, agent);
+
+                    // Enable input
+                    document.getElementById('user-input').disabled = false;
+                    document.getElementById('send-btn').disabled = false;
+                    document.getElementById('user-input').focus();
+
+                    updateStatus(`Connected to ${agent.name}`);
+
+                    // Show memory indicator
+                    showMemoryIndicator();
+                }
+
+            } catch (error) {
+                console.error('Failed to load agent:', error);
+                updateStatus('Failed to load agent', 'error');
+            }
+        }
+
+        // Send message
+        async function sendMessage() {
+            if (!currentAgent) return;
+
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Disable input
+            input.disabled = true;
+            document.getElementById('send-btn').disabled = true;
+
+            // Add user message
+            chatManager.addMessage('user', message);
+
+            // Clear input
+            input.value = '';
+
+            try {
+                updateStatus(`${currentAgent.name} is thinking...`);
+
+                const response = await fetch(`/api/agents/${currentAgent.id}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Add agent response
+                    chatManager.addMessage('agent', data.response.message, currentAgent);
+
+                    // Show if context was injected
+                    if (data.response.contextInjected) {
+                        showContextInjected(data.response.injectionMetadata);
+                    }
+
+                    updateStatus(`${currentAgent.name} responded`);
+                } else {
+                    throw new Error(data.error || 'Failed to get response');
+                }
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                chatManager.showError('Failed to send message');
+                updateStatus('Error sending message', 'error');
+            } finally {
+                // Re-enable input
+                input.disabled = false;
+                document.getElementById('send-btn').disabled = false;
+                input.focus();
+            }
+        }
+
+        // Show memory indicator
+        function showMemoryIndicator() {
+            const existing = document.querySelector('.memory-indicator');
+            if (existing) existing.remove();
+
+            const indicator = document.createElement('div');
+            indicator.className = 'memory-indicator';
+            indicator.textContent = '🧠 Cross-agent memory active';
+
+            document.querySelector('.chat-messages').appendChild(indicator);
+
+            setTimeout(() => {
+                indicator.classList.add('active');
+            }, 100);
+        }
+
+        // Show context injected notification
+        function showContextInjected(metadata) {
+            if (!metadata) return;
+
+            const indicator = document.querySelector('.memory-indicator');
+            if (indicator) {
+                indicator.textContent = `🧠 Context from ${metadata.agents.length} agent(s)`;
+                indicator.classList.add('active');
+
+                setTimeout(() => {
+                    indicator.textContent = '🧠 Cross-agent memory active';
+                    indicator.classList.remove('active');
+                }, 3000);
+            }
+        }
+
+        // Update status
+        function updateStatus(text, type = 'success') {
+            const statusText = document.getElementById('status-text');
+            const statusIndicator = document.querySelector('.status-indicator');
+
+            statusText.textContent = text;
+
+            if (type === 'error') {
+                statusIndicator.style.background = '#ef4444';
+            } else {
+                statusIndicator.style.background = '#4ade80';
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const input = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+
+            sendBtn.onclick = sendMessage;
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            };
+        }
+
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>

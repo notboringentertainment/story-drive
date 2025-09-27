@@ -1,0 +1,9 @@
+{
+  "documentId": "test_doc_123",
+  "content": "<p>This is a test document for auto-save functionality.</p>",
+  "timestamp": 1758478661558,
+  "version": 1,
+  "wordCount": 8,
+  "userId": "default-user",
+  "savedAt": "2025-09-21T18:17:41.570Z"
+}
