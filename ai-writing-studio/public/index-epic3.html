@@ -10,8 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Design Tokens -->
-    <link rel="stylesheet" href="../../../public/styles/design-tokens.css">
+    <!-- Design Tokens (embedded for now since external file doesn't exist) -->
 
     <style>
         * {
@@ -205,11 +204,11 @@
 
         .editor-content {
             flex: 1;
-            padding: 32px;
+            padding: 1in 1.5in 1in 1in;  /* Industry standard margins */
             overflow-y: auto;
             font-family: 'Courier Prime', 'Courier New', 'Courier', monospace;
-            font-size: 14px;
-            line-height: 1.2;
+            font-size: 12pt;  /* Standard screenplay font size */
+            line-height: 1;
             max-width: 8.5in;
             margin: 0 auto;
             width: 100%;
@@ -303,10 +302,18 @@
         .chat-input-container {
             padding: 16px;
             border-top: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Hide any quick suggestions that might appear */
+        .quick-suggestions {
+            display: none !important;
         }
 
         .chat-input {
-            width: 100%;
+            flex: 1;
             min-height: 36px;
             padding: 8px;
             background: #FAFAFA;
@@ -329,30 +336,45 @@
         .scene-heading {
             font-weight: 700;
             text-transform: uppercase;
-            margin: 24px 0 16px;
+            margin: 12pt 0 12pt 0;  /* Single line space before and after */
         }
 
         .action {
-            margin: 16px 0;
+            margin: 0 0 12pt 0;  /* Single line space after */
+            line-height: 1.5;  /* Slightly more readable for action lines */
         }
 
         .character {
-            text-align: center;
+            margin-left: 2.2in;  /* Industry standard character position */
             text-transform: uppercase;
-            margin: 16px 0 0;
+            margin-top: 12pt;
+            margin-bottom: 0;
+            font-weight: 700;
         }
 
         .dialogue {
             max-width: 3.5in;
-            margin: 0 auto 16px;
-            padding-left: 1in;
+            margin-left: 1in;  /* Industry standard dialogue position */
+            margin-right: 1.5in;
+            margin-top: 0;
+            margin-bottom: 12pt;
+            line-height: 1.5;
         }
 
         .parenthetical {
-            max-width: 2in;
-            margin: 0 auto;
-            padding-left: 1.6in;
-            font-style: italic;
+            max-width: 2.5in;
+            margin-left: 1.6in;  /* Industry standard parenthetical position */
+            margin-right: 2in;
+            margin-top: 0;
+            margin-bottom: 0;
+            font-style: normal;  /* Parentheticals are not italic in screenplays */
+        }
+
+        .transition {
+            text-align: right;
+            text-transform: uppercase;
+            margin: 12pt 0;
+            font-weight: 700;
         }
 
         /* Context Broadcasting Animation */
@@ -385,20 +407,14 @@
         <!-- Editor Panel -->
         <div class="editor-panel">
             <div class="editor-toolbar">
-                <button class="toolbar-button">Scene</button>
-                <button class="toolbar-button">Action</button>
-                <button class="toolbar-button">Character</button>
-                <button class="toolbar-button">Dialogue</button>
-                <button class="toolbar-button">Transition</button>
+                <button class="toolbar-button" id="sceneBtn">Scene</button>
+                <button class="toolbar-button" id="actionBtn">Action</button>
+                <button class="toolbar-button" id="characterBtn">Character</button>
+                <button class="toolbar-button" id="dialogueBtn">Dialogue</button>
+                <button class="toolbar-button" id="transitionBtn">Transition</button>
             </div>
             <div class="format-indicators" id="formatIndicators"></div>
             <div class="editor-content" contenteditable="true" id="editorContent">
-                <div class="scene-heading">INT. COFFEE SHOP - DAY</div>
-                <div class="action">The coffee shop buzzes with morning activity. Steam rises from the espresso machine as CUSTOMERS chat over their laptops.</div>
-                <div class="character">SARAH</div>
-                <div class="dialogue">I need you to understand something...</div>
-                <div class="parenthetical">(pausing)</div>
-                <div class="dialogue">This isn't just about the script anymore.</div>
             </div>
         </div>
 
@@ -423,7 +439,7 @@
         </div>
     </div>
 
-    <!-- Include the main Story-Drive JavaScript -->
-    <script src="js/story-drive.js"></script>
+    <!-- Include the main Story-Drive JavaScript WITH FULL MEMORY INTEGRATION -->
+    <script src="js/story-drive-integrated.js"></script>
 </body>
 </html>
